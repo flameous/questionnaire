@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Answers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .question-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .answer-comparison {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .answer-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+
+        .answer-box.previous {
+            background: #ffe6e6;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .answer-box.my {
+            background: #e6f3ff;
+            border-color: #007bff;
+            color: #004085;
+        }
+
+        .answer-box.match {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .answer-box.skipped {
+            background: #f8f9fa;
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+
+        .answer-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .answer-text {
+            font-size: 1.1em;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Compare Answers</h1>
+        <div id="content"></div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="logic.js"></script>
+    <script>
+        // Get URL parameter
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Render comparison page
+        function renderComparison() {
+            const contentDiv = document.getElementById('content');
+            const questionSetParam = getURLParameter('questionSet');
+            const previousAnswerParam = getURLParameter('previousAnswer');
+            const myAnswerParam = getURLParameter('myAnswer');
+
+            if (!questionSetParam || !previousAnswerParam || !myAnswerParam) {
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> Missing required parameters. Please provide questionSet, previousAnswer, and myAnswer.
+                    </div>
+                `;
+                return;
+            }
+
+            const questionsSet = questionBank[questionSetParam];
+            if (!questionsSet) {
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> Question set "${questionSetParam}" not found.
+                    </div>
+                `;
+                return;
+            }
+
+            // Decode answers from numbers
+            const previousAnswerArray = answerNumberToAnswers(questionsSet, parseInt(previousAnswerParam));
+            const myAnswerArray = answerNumberToAnswers(questionsSet, parseInt(myAnswerParam));
+
+            let html = `<div class="info">Questionnaire: <strong>${questionSetParam}</strong></div>`;
+
+            questionsSet.questions.forEach((q, index) => {
+                const previousIndex = previousAnswerArray[index] || 0;
+                const myIndex = myAnswerArray[index] || 0;
+                
+                // Check if answers are skipped
+                const previousSkipped = previousIndex === 0;
+                const mySkipped = myIndex === 0;
+                
+                // Convert indices to text (1-based to 0-based for array access)
+                const previousText = previousSkipped ? 'Skipped' : 
+                    (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length) 
+                        ? q.options[previousIndex - 1] : '(Invalid)';
+                
+                const myText = mySkipped ? 'Skipped' : 
+                    (myIndex - 1 >= 0 && myIndex - 1 < q.options.length) 
+                        ? q.options[myIndex - 1] : '(Invalid)';
+                
+                // Determine CSS classes for answer boxes
+                const previousClass = previousSkipped ? 'skipped' : 'previous';
+                const myClass = mySkipped ? 'skipped' : 'my';
+
+                html += `
+                    <div class="question-container">
+                        <div class="question-title">${index + 1}. ${q.question}</div>
+                        <div class="answer-comparison">
+                            <div class="answer-box ${previousClass}">
+                                <div class="answer-label">Previous Answer</div>
+                                <div class="answer-text">${previousText}</div>
+                            </div>
+                            <div class="answer-box ${myClass}">
+                                <div class="answer-label">My Answer</div>
+                                <div class="answer-text">${myText}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '<a href="index.html" class="back-btn">Back to Questionnaire</a>';
+
+            contentDiv.innerHTML = html;
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', renderComparison);
+    </script>
+</body>
+</html>
