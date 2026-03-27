@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compare Answers</title>
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme');
+                const theme = savedTheme === 'dark' || savedTheme === 'light'
+                    ? savedTheme
+                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+            } catch (error) {
+                document.documentElement.classList.toggle('dark', window.matchMedia('(prefers-color-scheme: dark)').matches);
+            }
+        }());
+    </script>
     <style>
         :root {
             color-scheme: light;
@@ -17,7 +30,7 @@
             --match: #f1f1ee;
         }
 
-        body.dark {
+        html.dark {
             color-scheme: dark;
             --bg: #111111;
             --surface: #161616;
@@ -27,6 +40,10 @@
             --line-strong: #3b3b3b;
             --soft: #1a1a1a;
             --match: #202020;
+        }
+
+        html {
+            background: var(--bg);
         }
 
         * {
@@ -299,12 +316,12 @@
         }
 
         function applyTheme(theme) {
-            document.body.classList.toggle('dark', theme === 'dark');
+            document.documentElement.classList.toggle('dark', theme === 'dark');
             localStorage.setItem('theme', theme);
         }
 
         function toggleTheme() {
-            applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+            applyTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
         }
 
         function renderStandardComparison(questionSetParam, questionsSet, previousAnswerArray, myAnswerArray) {
