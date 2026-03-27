@@ -310,9 +310,66 @@
         .copy-btn.copied {
             background: #28a745;
         }
+
+        /* Theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.2);
+            color: #fff;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .theme-toggle:hover {
+            background: rgba(0,0,0,0.35);
+        }
+        body.night-theme .theme-toggle {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: #e0e0e0;
+        }
+        body.night-theme .theme-toggle:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* Night theme */
+        body.night-theme {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        body.night-theme .container {
+            background: #0f0f1a;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        body.night-theme h1,
+        body.night-theme .question-title,
+        body.night-theme .question-title-text,
+        body.night-theme .radio-option label { color: #e0e0e0; }
+        body.night-theme .question-container { background: #1a1a2e; border-color: #2a2a4a; }
+        body.night-theme .radio-option { background: #16213e; border-color: #2a2a4a; }
+        body.night-theme .radio-option:hover { background: #1f2b4a; border-color: #667eea; }
+        body.night-theme .info { color: #a0a0a0; }
+        body.night-theme .selection-title { color: #a0a0a0; }
+        body.night-theme .questionnaire-card { box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        body.night-theme .error { background: #3d2020; color: #f88; border-left-color: #c33; }
+        body.night-theme .unselect-btn { color: #a0a0a0; border-color: #6c757d; }
+        body.night-theme .unselect-btn:hover { background: #6c757d; color: #0f0f1a; }
+        body.night-theme .modal-content { background: #0f0f1a; }
+        body.night-theme .modal-header h2 { color: #e0e0e0; }
+        body.night-theme .url-input { background: #1a1a2e; border-color: #2a2a4a; color: #e0e0e0; }
     </style>
 </head>
 <body>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle day/night theme" aria-label="Toggle theme">☀</button>
     <div class="container">
         <h1>Questionnaire</h1>
         <div id="content"></div>
@@ -351,8 +408,9 @@
             
             availableSets.forEach(setKey => {
                 const questions = questionBank[setKey];
+                const href = setKey === 'bingo' ? `bingo.html?questions=${setKey}` : `?questions=${setKey}`;
                 html += `
-                    <div class="questionnaire-card" onclick="window.location.href='?questions=${setKey}'">
+                    <div class="questionnaire-card" onclick="window.location.href='${href}'">
                         <h2>${setKey}</h2>
                         <p>${questions.questions.length} questions</p>
                     </div>
@@ -546,6 +604,26 @@
             }
         });
         
+
+        // Theme toggle
+        (function() {
+            const STORAGE_KEY = 'questionnaire-theme';
+            const btn = document.getElementById('themeToggle');
+            function applyTheme(isNight) {
+                document.body.classList.toggle('night-theme', isNight);
+                btn.textContent = isNight ? '☀' : '🌙';
+                btn.title = isNight ? 'Switch to day theme' : 'Switch to night theme';
+            }
+            function toggleTheme() {
+                const isNight = document.body.classList.toggle('night-theme');
+                try { localStorage.setItem(STORAGE_KEY, isNight ? 'night' : 'day'); } catch (e) {}
+                applyTheme(isNight);
+            }
+            btn.addEventListener('click', toggleTheme);
+            let saved = 'day';
+            try { saved = localStorage.getItem(STORAGE_KEY) || 'day'; } catch (e) {}
+            applyTheme(saved === 'night');
+        })();
 
         // Initialize when page loads
         window.addEventListener('DOMContentLoaded', function() {

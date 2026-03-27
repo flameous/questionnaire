@@ -135,9 +135,106 @@
             margin-bottom: 20px;
             font-size: 0.9em;
         }
+
+        /* Bingo grid comparison */
+        .bingo-compare-title {
+            text-align: center;
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        .bingo-compare-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .bingo-compare-cell {
+            aspect-ratio: 1;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 12px;
+            background: #f8f9fa;
+        }
+
+        .bingo-compare-cell .food-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .bingo-compare-cell .caption {
+            font-size: 0.8em;
+            margin-top: 2px;
+        }
+
+        .bingo-compare-cell .caption.previous {
+            color: #721c24;
+            font-weight: 600;
+        }
+
+        .bingo-compare-cell .caption.my {
+            color: #004085;
+            font-weight: 600;
+        }
+
+        .bingo-compare-cell .caption.skipped {
+            color: #6c757d;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.2);
+            color: #fff;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .theme-toggle:hover { background: rgba(0,0,0,0.35); }
+        body.night-theme .theme-toggle {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: #e0e0e0;
+        }
+        body.night-theme .theme-toggle:hover { background: rgba(255,255,255,0.25); }
+
+        body.night-theme { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.night-theme .container { background: #0f0f1a; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+        body.night-theme h1,
+        body.night-theme .question-title,
+        body.night-theme .bingo-compare-title,
+        body.night-theme .food-name { color: #e0e0e0; }
+        body.night-theme .info { color: #a0a0a0; }
+        body.night-theme .error { background: #3d2020; color: #f88; border-left-color: #c33; }
+        body.night-theme .question-container { background: #1a1a2e; border-color: #2a2a4a; }
+        body.night-theme .answer-box { border-width: 2px; }
+        body.night-theme .answer-box.previous { background: #3d2020; border-color: #dc3545; color: #f88; }
+        body.night-theme .answer-box.my { background: #1a2a4a; border-color: #007bff; color: #90c4ff; }
+        body.night-theme .answer-box.skipped { background: #2a2a4a; border-color: #6c757d; color: #a0a0a0; }
+        body.night-theme .bingo-compare-cell { background: #1a1a2e; border-color: #2a2a4a; }
+        body.night-theme .bingo-compare-cell .food-name { color: #e0e0e0; }
     </style>
 </head>
 <body>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle day/night theme" aria-label="Toggle theme">☀</button>
     <div class="container">
         <h1>Compare Answers</h1>
         <div id="content"></div>
@@ -182,50 +279,88 @@
             const previousAnswerArray = answerNumberToAnswers(questionsSet, parseInt(previousAnswerParam));
             const myAnswerArray = answerNumberToAnswers(questionsSet, parseInt(myAnswerParam));
 
-            let html = `<div class="info">Questionnaire: <strong>${questionSetParam}</strong></div>`;
+            let html = '';
 
-            questionsSet.questions.forEach((q, index) => {
-                const previousIndex = previousAnswerArray[index] || 0;
-                const myIndex = myAnswerArray[index] || 0;
-                
-                // Check if answers are skipped
-                const previousSkipped = previousIndex === 0;
-                const mySkipped = myIndex === 0;
-                
-                // Convert indices to text (1-based to 0-based for array access)
-                const previousText = previousSkipped ? 'Skipped' : 
-                    (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length) 
-                        ? q.options[previousIndex - 1] : '(Invalid)';
-                
-                const myText = mySkipped ? 'Skipped' : 
-                    (myIndex - 1 >= 0 && myIndex - 1 < q.options.length) 
-                        ? q.options[myIndex - 1] : '(Invalid)';
-                
-                // Determine CSS classes for answer boxes
-                const previousClass = previousSkipped ? 'skipped' : 'previous';
-                const myClass = mySkipped ? 'skipped' : 'my';
-
-                html += `
-                    <div class="question-container">
-                        <div class="question-title">${index + 1}. ${q.question}</div>
-                        <div class="answer-comparison">
-                            <div class="answer-box ${previousClass}">
-                                <div class="answer-label">Previous Answer</div>
-                                <div class="answer-text">${previousText}</div>
-                            </div>
-                            <div class="answer-box ${myClass}">
-                                <div class="answer-label">My Answer</div>
-                                <div class="answer-text">${myText}</div>
+            if (questionSetParam === 'bingo') {
+                const title = questionsSet.title || 'Which food do you like?';
+                html += `<div class="bingo-compare-title">${title}</div>`;
+                html += `<div class="info">Comparison</div>`;
+                html += '<div class="bingo-compare-grid">';
+                questionsSet.questions.forEach((q, index) => {
+                    const previousIndex = previousAnswerArray[index] || 0;
+                    const myIndex = myAnswerArray[index] || 0;
+                    const previousSkipped = previousIndex === 0;
+                    const mySkipped = myIndex === 0;
+                    const previousText = previousSkipped ? 'Skipped' :
+                        (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length)
+                            ? q.options[previousIndex - 1] : '(Invalid)';
+                    const myText = mySkipped ? 'Skipped' :
+                        (myIndex - 1 >= 0 && myIndex - 1 < q.options.length)
+                            ? q.options[myIndex - 1] : '(Invalid)';
+                    html += `
+                        <div class="bingo-compare-cell">
+                            <span class="food-name">${q.question}</span>
+                            <span class="caption previous">Previous: ${previousText}</span>
+                            <span class="caption my">Mine: ${myText}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += `<div class="info">Questionnaire: <strong>${questionSetParam}</strong></div>`;
+                questionsSet.questions.forEach((q, index) => {
+                    const previousIndex = previousAnswerArray[index] || 0;
+                    const myIndex = myAnswerArray[index] || 0;
+                    const previousSkipped = previousIndex === 0;
+                    const mySkipped = myIndex === 0;
+                    const previousText = previousSkipped ? 'Skipped' :
+                        (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length)
+                            ? q.options[previousIndex - 1] : '(Invalid)';
+                    const myText = mySkipped ? 'Skipped' :
+                        (myIndex - 1 >= 0 && myIndex - 1 < q.options.length)
+                            ? q.options[myIndex - 1] : '(Invalid)';
+                    const previousClass = previousSkipped ? 'skipped' : 'previous';
+                    const myClass = mySkipped ? 'skipped' : 'my';
+                    html += `
+                        <div class="question-container">
+                            <div class="question-title">${index + 1}. ${q.question}</div>
+                            <div class="answer-comparison">
+                                <div class="answer-box ${previousClass}">
+                                    <div class="answer-label">Previous Answer</div>
+                                    <div class="answer-text">${previousText}</div>
+                                </div>
+                                <div class="answer-box ${myClass}">
+                                    <div class="answer-label">My Answer</div>
+                                    <div class="answer-text">${myText}</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
 
             html += '<a href="index.html" class="back-btn">Back to Questionnaire</a>';
 
             contentDiv.innerHTML = html;
         }
+
+        (function() {
+            const STORAGE_KEY = 'questionnaire-theme';
+            const btn = document.getElementById('themeToggle');
+            function applyTheme(isNight) {
+                document.body.classList.toggle('night-theme', isNight);
+                btn.textContent = isNight ? '☀' : '🌙';
+                btn.title = isNight ? 'Switch to day theme' : 'Switch to night theme';
+            }
+            btn.addEventListener('click', function() {
+                const isNight = document.body.classList.toggle('night-theme');
+                try { localStorage.setItem(STORAGE_KEY, isNight ? 'night' : 'day'); } catch (e) {}
+                applyTheme(isNight);
+            });
+            let saved = 'day';
+            try { saved = localStorage.getItem(STORAGE_KEY) || 'day'; } catch (e) {}
+            applyTheme(saved === 'night');
+        })();
 
         // Initialize when page loads
         window.addEventListener('DOMContentLoaded', renderComparison);

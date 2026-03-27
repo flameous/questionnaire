@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Questionnaire</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 560px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .bingo-cell-btn {
+            aspect-ratio: 1;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .bingo-cell-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .bingo-cell-btn.clicked {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn.compare {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .url-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.2);
+            color: #fff;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .theme-toggle:hover { background: rgba(0,0,0,0.35); }
+        body.night-theme .theme-toggle {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: #e0e0e0;
+        }
+        body.night-theme .theme-toggle:hover { background: rgba(255,255,255,0.25); }
+
+        body.night-theme { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.night-theme .container { background: #0f0f1a; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+        body.night-theme h1 { color: #e0e0e0; }
+        body.night-theme .info { color: #a0a0a0; }
+        body.night-theme .error { background: #3d2020; color: #f88; border-left-color: #c33; }
+        body.night-theme .bingo-cell-btn { background: #1a1a2e; border-color: #2a2a4a; color: #e0e0e0; }
+        body.night-theme .bingo-cell-btn:hover { background: #1f2b4a; border-color: #667eea; }
+        body.night-theme .bingo-cell-btn.clicked { color: white; }
+        body.night-theme .modal-content { background: #0f0f1a; }
+        body.night-theme .modal-header h2 { color: #e0e0e0; }
+        body.night-theme .url-input { background: #1a1a2e; border-color: #2a2a4a; color: #e0e0e0; }
+        body.night-theme .back-link { color: #a0c4ff; }
+    </style>
+</head>
+<body>
+    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle day/night theme" aria-label="Toggle theme">☀</button>
+    <div class="container">
+        <h1 id="bingoTitle">Which food do you like?</h1>
+        <div id="content"></div>
+        <a href="index.html" class="back-link">&larr; Back to questionnaires</a>
+    </div>
+
+    <div id="resultModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Your Answer URL</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="url-container">
+                <input type="text" id="resultUrl" class="url-input" readonly>
+                <button class="copy-btn" onclick="copyToClipboard()">Copy URL</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="logic.js"></script>
+    <script>
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function renderBingo() {
+            const contentDiv = document.getElementById('content');
+            const questionSetParam = getURLParameter('questions') || 'bingo';
+            const questionsSet = questionBank[questionSetParam];
+
+            if (!questionsSet) {
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> Question set "${questionSetParam}" not found. Use ?questions=bingo
+                    </div>
+                `;
+                return;
+            }
+
+            const title = questionsSet.title || 'Which food do you like?';
+            document.getElementById('bingoTitle').textContent = title;
+
+            const previousAnswer = getURLParameter('previousAnswer');
+            const count = questionsSet.questions.length;
+
+            let html = '';
+            if (previousAnswer) {
+                html += '<div class="info" style="background: #e7f3ff; border-left: 4px solid #007bff; padding: 12px; border-radius: 8px; margin-bottom: 20px; color: #004085;">Some user already filled this questionnaire, press compare to see the results.</div>';
+            }
+
+            html += '<form id="questionnaire-form">';
+            html += '<div style="display:none">';
+            questionsSet.questions.forEach((q, index) => {
+                html += `<input type="hidden" name="question_${index}" id="q_${index}" value="No">`;
+            });
+            html += '</div>';
+            html += '<div class="bingo-grid">';
+            questionsSet.questions.forEach((q, index) => {
+                const foodName = q.question;
+                html += `
+                    <div class="bingo-cell-btn" id="cell_${index}" data-index="${index}" role="button" tabindex="0">
+                        ${foodName}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            if (!previousAnswer) {
+                html += '<button type="submit" class="submit-btn">Submit Answers</button>';
+            } else {
+                html += '<button type="button" class="submit-btn compare" id="compare-btn">Compare Answers</button>';
+            }
+            html += '</form>';
+
+            contentDiv.innerHTML = html;
+
+            questionsSet.questions.forEach((q, index) => {
+                const btn = document.getElementById(`cell_${index}`);
+                const input = document.getElementById(`q_${index}`);
+                btn.addEventListener('click', function() {
+                    const isClicked = input.value === 'Yes';
+                    input.value = isClicked ? 'No' : 'Yes';
+                    btn.classList.toggle('clicked', input.value === 'Yes');
+                });
+                btn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            document.getElementById('questionnaire-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const answerArray = [];
+                questionsSet.questions.forEach((q, index) => {
+                    const value = formData.get(`question_${index}`);
+                    const optionIndex = q.options.findIndex(opt => opt === value);
+                    answerArray.push(optionIndex >= 0 ? optionIndex + 1 : 0);
+                });
+                const resultNumber = handleAnswers(questionsSet, answerArray);
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('previousAnswer', resultNumber);
+                showModal(currentUrl.toString());
+            });
+
+            const compareBtn = document.getElementById('compare-btn');
+            if (compareBtn) {
+                compareBtn.addEventListener('click', function() {
+                    const formData = new FormData(document.getElementById('questionnaire-form'));
+                    const answerArray = [];
+                    questionsSet.questions.forEach((q, index) => {
+                        const value = formData.get(`question_${index}`);
+                        const optionIndex = q.options.findIndex(opt => opt === value);
+                        answerArray.push(optionIndex >= 0 ? optionIndex + 1 : 0);
+                    });
+                    const myAnswer = handleAnswers(questionsSet, answerArray);
+                    const compareUrl = new URL('compare.html', window.location.href);
+                    compareUrl.searchParams.set('questionSet', questionSetParam);
+                    compareUrl.searchParams.set('previousAnswer', previousAnswer);
+                    compareUrl.searchParams.set('myAnswer', myAnswer);
+                    window.location.href = compareUrl.toString();
+                });
+            }
+        }
+
+        function showModal(url) {
+            document.getElementById('resultUrl').value = url;
+            document.getElementById('resultModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('show');
+            const copyBtn = document.querySelector('.copy-btn');
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = 'Copy URL';
+        }
+
+        function copyToClipboard() {
+            const urlInput = document.getElementById('resultUrl');
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+            } catch (e) {
+                navigator.clipboard.writeText(urlInput.value);
+            }
+            const copyBtn = document.querySelector('.copy-btn');
+            copyBtn.classList.add('copied');
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.textContent = 'Copy URL';
+            }, 2000);
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target.id === 'resultModal') closeModal();
+        });
+
+        (function() {
+            const STORAGE_KEY = 'questionnaire-theme';
+            const btn = document.getElementById('themeToggle');
+            function applyTheme(isNight) {
+                document.body.classList.toggle('night-theme', isNight);
+                btn.textContent = isNight ? '☀' : '🌙';
+                btn.title = isNight ? 'Switch to day theme' : 'Switch to night theme';
+            }
+            btn.addEventListener('click', function() {
+                const isNight = document.body.classList.toggle('night-theme');
+                try { localStorage.setItem(STORAGE_KEY, isNight ? 'night' : 'day'); } catch (e) {}
+                applyTheme(isNight);
+            });
+            let saved = 'day';
+            try { saved = localStorage.getItem(STORAGE_KEY) || 'day'; } catch (e) {}
+            applyTheme(saved === 'night');
+        })();
+
+        window.addEventListener('DOMContentLoaded', function() {
+            runTests();
+            renderBingo();
+        });
+    </script>
+</body>
+</html>

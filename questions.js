@@ -119,8 +119,26 @@ let qFanzil = {
     ]
 }
 
+let qBingo = {
+    "optionsCount": 2,
+    "allowSkip": true,
+    "title": "Which food do you like?",
+    "questions": [
+        { "question": "Pizza", "options": ["Yes", "No"] },
+        { "question": "Burger", "options": ["Yes", "No"] },
+        { "question": "Pasta", "options": ["Yes", "No"] },
+        { "question": "Salad", "options": ["Yes", "No"] },
+        { "question": "Soup", "options": ["Yes", "No"] },
+        { "question": "Cheese", "options": ["Yes", "No"] },
+        { "question": "Coffee", "options": ["Yes", "No"] },
+        { "question": "Tea", "options": ["Yes", "No"] },
+        { "question": "Cake", "options": ["Yes", "No"] }
+    ]
+};
+
 let questionBank = {
     "food": qFood,
     "hobby": qHobby,
-    "fanzil": qFanzil
+    "fanzil": qFanzil,
+    "bingo": qBingo
 }
