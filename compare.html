@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compare Answers</title>
     <style>
+        :root {
+            color-scheme: light;
+            --bg: #fcfcfb;
+            --surface: #ffffff;
+            --text: #171717;
+            --muted: #6b6b6b;
+            --line: #e6e6e2;
+            --line-strong: #d4d4cf;
+            --soft: #f5f5f2;
+            --match: #f1f1ee;
+        }
+
+        body.dark {
+            color-scheme: dark;
+            --bg: #111111;
+            --surface: #161616;
+            --text: #f5f5f3;
+            --muted: #afafaa;
+            --line: #2b2b2b;
+            --line-strong: #3b3b3b;
+            --soft: #1a1a1a;
+            --match: #202020;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,244 +36,368 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        a,
+        button {
+            font: inherit;
+        }
+
+        .page {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 28px 24px 88px;
+        }
+
+        .topbar {
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 52px;
         }
 
-        .container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 900px;
-            width: 100%;
+        .brand {
+            font-size: 0.95rem;
+            color: var(--muted);
+            letter-spacing: 0.03em;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-            font-size: 2em;
+        .theme-toggle,
+        .back-btn {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 10px 16px;
+            cursor: pointer;
+            text-decoration: none;
         }
 
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
+        .page-title {
+            font-size: clamp(3rem, 7vw, 4.6rem);
+            line-height: 0.98;
+            letter-spacing: -0.05em;
             margin-bottom: 20px;
-            border-left: 4px solid #c33;
+        }
+
+        .summary-text,
+        .info,
+        .answer-label,
+        .empty-state,
+        .error,
+        .bingo-caption {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .summary-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-top: 30px;
+            margin-bottom: 16px;
+            padding: 16px 18px;
+            background: var(--soft);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+        }
+
+        .summary-count {
+            color: var(--text);
+            font-weight: 700;
         }
 
         .question-container {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border: 2px solid #e9ecef;
+            margin-top: 34px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
         }
 
         .question-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
+            font-size: clamp(1.7rem, 4vw, 2.25rem);
+            line-height: 1.18;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+            margin-bottom: 18px;
         }
 
-        .answer-comparison {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .answer-box {
-            flex: 1;
-            min-width: 200px;
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid;
-        }
-
-        .answer-box.previous {
-            background: #ffe6e6;
-            border-color: #dc3545;
-            color: #721c24;
-        }
-
-        .answer-box.my {
-            background: #e6f3ff;
-            border-color: #007bff;
-            color: #004085;
-        }
-
-        .answer-box.match {
-            background: #d4edda;
-            border-color: #28a745;
-            color: #155724;
-        }
-
-        .answer-box.skipped {
-            background: #f8f9fa;
-            border-color: #6c757d;
-            color: #6c757d;
-        }
-
-        .answer-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.9em;
-            text-transform: uppercase;
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+            gap: 18px;
+            align-items: end;
         }
 
         .answer-text {
-            font-size: 1.1em;
+            font-size: 1.08rem;
+            line-height: 1.65;
+            color: var(--text);
+            margin-top: 6px;
+            word-break: break-word;
         }
 
-        .back-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 20px;
-            text-decoration: none;
-            display: inline-block;
-            transition: transform 0.2s, box-shadow 0.2s;
+        .answer-text.muted {
+            color: var(--muted);
         }
 
-        .back-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .answer-status {
+            color: var(--muted);
+            padding: 10px 0;
         }
 
-        .info {
-            text-align: center;
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 0.9em;
+        .answer-status.match {
+            color: var(--text);
+            background: var(--match);
+            border: 1px solid var(--line);
+            padding: 10px 14px;
+            border-radius: 999px;
         }
 
-        /* Bingo grid comparison */
-        .bingo-compare-title {
-            text-align: center;
-            color: #333;
-            font-size: 1.3em;
-            margin-bottom: 20px;
-        }
-
-        .bingo-compare-grid {
+        .bingo-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 32px;
         }
 
-        .bingo-compare-cell {
-            aspect-ratio: 1;
-            min-height: 100px;
+        .bingo-cell {
+            min-height: 170px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            padding: 18px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            border: 2px solid #e9ecef;
-            padding: 12px;
-            background: #f8f9fa;
+            gap: 10px;
+            justify-content: space-between;
         }
 
-        .bingo-compare-cell .food-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 1em;
+        .bingo-cell.match {
+            background: var(--match);
+            border-color: var(--line-strong);
         }
 
-        .bingo-compare-cell .caption {
-            font-size: 0.8em;
-            margin-top: 2px;
+        .bingo-name {
+            font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            font-weight: 700;
         }
 
-        .bingo-compare-cell .caption.previous {
-            color: #721c24;
-            font-weight: 600;
+        .bingo-answer {
+            display: grid;
+            gap: 4px;
         }
 
-        .bingo-compare-cell .caption.my {
-            color: #004085;
-            font-weight: 600;
+        .bingo-answer strong {
+            color: var(--text);
+            font-size: 0.98rem;
         }
 
-        .bingo-compare-cell .caption.skipped {
-            color: #6c757d;
+        .bingo-answer span {
+            color: var(--muted);
+            line-height: 1.45;
         }
 
-        .theme-toggle {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.5);
-            background: rgba(0,0,0,0.2);
-            color: #fff;
-            font-size: 1.2em;
-            cursor: pointer;
-            z-index: 999;
+        .bingo-state {
+            align-self: flex-start;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.92rem;
+            color: var(--muted);
+        }
+
+        .bingo-cell.match .bingo-state {
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, border-color 0.2s;
+            gap: 12px;
+            margin-top: 38px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
         }
-        .theme-toggle:hover { background: rgba(0,0,0,0.35); }
-        body.night-theme .theme-toggle {
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.15);
-            color: #e0e0e0;
-        }
-        body.night-theme .theme-toggle:hover { background: rgba(255,255,255,0.25); }
 
-        body.night-theme { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
-        body.night-theme .container { background: #0f0f1a; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
-        body.night-theme h1,
-        body.night-theme .question-title,
-        body.night-theme .bingo-compare-title,
-        body.night-theme .food-name { color: #e0e0e0; }
-        body.night-theme .info { color: #a0a0a0; }
-        body.night-theme .error { background: #3d2020; color: #f88; border-left-color: #c33; }
-        body.night-theme .question-container { background: #1a1a2e; border-color: #2a2a4a; }
-        body.night-theme .answer-box { border-width: 2px; }
-        body.night-theme .answer-box.previous { background: #3d2020; border-color: #dc3545; color: #f88; }
-        body.night-theme .answer-box.my { background: #1a2a4a; border-color: #007bff; color: #90c4ff; }
-        body.night-theme .answer-box.skipped { background: #2a2a4a; border-color: #6c757d; color: #a0a0a0; }
-        body.night-theme .bingo-compare-cell { background: #1a1a2e; border-color: #2a2a4a; }
-        body.night-theme .bingo-compare-cell .food-name { color: #e0e0e0; }
+        .empty-state,
+        .error {
+            margin-top: 20px;
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: var(--soft);
+            border: 1px solid var(--line);
+        }
+
+        .error {
+            border-color: #d68d8d;
+        }
+
+        .theme-toggle:hover,
+        .back-btn:hover {
+            opacity: 0.85;
+        }
+
+        @media (max-width: 720px) {
+            .page {
+                padding: 20px 18px 72px;
+            }
+
+            .topbar,
+            .summary-bar,
+            .actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .bingo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <button type="button" class="theme-toggle" id="themeToggle" title="Toggle day/night theme" aria-label="Toggle theme">☀</button>
-    <div class="container">
-        <h1>Compare Answers</h1>
+    <div class="page">
+        <div class="topbar">
+            <div class="brand">Comparison</div>
+            <button id="themeToggle" class="theme-toggle" type="button">Light / Dark</button>
+        </div>
+
+        <h1 class="page-title">Compare answers</h1>
+        <p class="summary-text">The comparison view now follows the same minimal design system as the questionnaire, including the bingo flow.</p>
         <div id="content"></div>
     </div>
 
     <script src="questions.js"></script>
     <script src="logic.js"></script>
     <script>
-        // Get URL parameter
         function getURLParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name);
         }
 
-        // Render comparison page
+        function getThemePreference() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') {
+                return savedTheme;
+            }
+
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function applyTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            localStorage.setItem('theme', theme);
+        }
+
+        function toggleTheme() {
+            applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+        }
+
+        function renderStandardComparison(questionSetParam, questionsSet, previousAnswerArray, myAnswerArray) {
+            let matchCount = 0;
+            let html = '';
+
+            questionsSet.questions.forEach((q, index) => {
+                const previousIndex = previousAnswerArray[index] || 0;
+                const myIndex = myAnswerArray[index] || 0;
+                const previousSkipped = previousIndex === 0;
+                const mySkipped = myIndex === 0;
+                const isMatch = previousIndex === myIndex && !previousSkipped && !mySkipped;
+
+                if (isMatch) {
+                    matchCount += 1;
+                }
+
+                const previousText = previousSkipped ? 'Skipped' : (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length ? q.options[previousIndex - 1] : '(Invalid)');
+                const myText = mySkipped ? 'Skipped' : (myIndex - 1 >= 0 && myIndex - 1 < q.options.length ? q.options[myIndex - 1] : '(Invalid)');
+
+                html += `
+                    <section class="question-container">
+                        <h2 class="question-title">${index + 1}. ${q.question}</h2>
+                        <div class="comparison-grid">
+                            <div>
+                                <div class="answer-label">Previous answer</div>
+                                <div class="answer-text ${previousSkipped ? 'muted' : ''}">${previousText}</div>
+                            </div>
+                            <div>
+                                <div class="answer-label">My answer</div>
+                                <div class="answer-text ${mySkipped ? 'muted' : ''}">${myText}</div>
+                            </div>
+                            <div class="answer-status ${isMatch ? 'match' : ''}">${isMatch ? 'Match' : 'Different'}</div>
+                        </div>
+                    </section>
+                `;
+            });
+
+            return `
+                <div class="info">Questionnaire: <strong>${questionSetParam}</strong></div>
+                <div class="summary-bar">
+                    <div>Comparison summary</div>
+                    <div class="summary-count">${matchCount} matches of ${questionsSet.questions.length}</div>
+                </div>
+                ${html || '<div class="empty-state">No questions found for this questionnaire.</div>'}
+            `;
+        }
+
+        function renderBingoComparison(questionsSet, previousAnswerArray, myAnswerArray) {
+            let matchCount = 0;
+            let html = '';
+
+            questionsSet.questions.forEach((q, index) => {
+                const previousIndex = previousAnswerArray[index] || 0;
+                const myIndex = myAnswerArray[index] || 0;
+                const previousSkipped = previousIndex === 0;
+                const mySkipped = myIndex === 0;
+                const isMatch = previousIndex === myIndex;
+
+                if (isMatch) {
+                    matchCount += 1;
+                }
+
+                const previousText = previousSkipped ? 'Skipped' : (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length ? q.options[previousIndex - 1] : '(Invalid)');
+                const myText = mySkipped ? 'Skipped' : (myIndex - 1 >= 0 && myIndex - 1 < q.options.length ? q.options[myIndex - 1] : '(Invalid)');
+
+                html += `
+                    <article class="bingo-cell ${isMatch ? 'match' : ''}">
+                        <div class="bingo-name">${q.question}</div>
+                        <div class="bingo-answer">
+                            <strong>Previous</strong>
+                            <span>${previousText}</span>
+                        </div>
+                        <div class="bingo-answer">
+                            <strong>Mine</strong>
+                            <span>${myText}</span>
+                        </div>
+                        <div class="bingo-state">${isMatch ? 'Match' : 'Different'}</div>
+                    </article>
+                `;
+            });
+
+            return `
+                <div class="info">${questionsSet.title || 'Bingo comparison'}</div>
+                <div class="summary-bar">
+                    <div>Bingo summary</div>
+                    <div class="summary-count">${matchCount} matches of ${questionsSet.questions.length}</div>
+                </div>
+                <div class="bingo-caption">Each square shows the previous answer and your answer using the same simple visual style as the main bingo page.</div>
+                <div class="bingo-grid">${html}</div>
+            `;
+        }
+
         function renderComparison() {
             const contentDiv = document.getElementById('content');
             const questionSetParam = getURLParameter('questionSet');
@@ -275,95 +423,30 @@
                 return;
             }
 
-            // Decode answers from numbers
-            const previousAnswerArray = answerNumberToAnswers(questionsSet, parseInt(previousAnswerParam));
-            const myAnswerArray = answerNumberToAnswers(questionsSet, parseInt(myAnswerParam));
+            const previousAnswerArray = answerNumberToAnswers(questionsSet, parseInt(previousAnswerParam, 10));
+            const myAnswerArray = answerNumberToAnswers(questionsSet, parseInt(myAnswerParam, 10));
 
-            let html = '';
+            const bodyHtml = questionSetParam === 'bingo'
+                ? renderBingoComparison(questionsSet, previousAnswerArray, myAnswerArray)
+                : renderStandardComparison(questionSetParam, questionsSet, previousAnswerArray, myAnswerArray);
 
-            if (questionSetParam === 'bingo') {
-                const title = questionsSet.title || 'Which food do you like?';
-                html += `<div class="bingo-compare-title">${title}</div>`;
-                html += `<div class="info">Comparison</div>`;
-                html += '<div class="bingo-compare-grid">';
-                questionsSet.questions.forEach((q, index) => {
-                    const previousIndex = previousAnswerArray[index] || 0;
-                    const myIndex = myAnswerArray[index] || 0;
-                    const previousSkipped = previousIndex === 0;
-                    const mySkipped = myIndex === 0;
-                    const previousText = previousSkipped ? 'Skipped' :
-                        (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length)
-                            ? q.options[previousIndex - 1] : '(Invalid)';
-                    const myText = mySkipped ? 'Skipped' :
-                        (myIndex - 1 >= 0 && myIndex - 1 < q.options.length)
-                            ? q.options[myIndex - 1] : '(Invalid)';
-                    html += `
-                        <div class="bingo-compare-cell">
-                            <span class="food-name">${q.question}</span>
-                            <span class="caption previous">Previous: ${previousText}</span>
-                            <span class="caption my">Mine: ${myText}</span>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-            } else {
-                html += `<div class="info">Questionnaire: <strong>${questionSetParam}</strong></div>`;
-                questionsSet.questions.forEach((q, index) => {
-                    const previousIndex = previousAnswerArray[index] || 0;
-                    const myIndex = myAnswerArray[index] || 0;
-                    const previousSkipped = previousIndex === 0;
-                    const mySkipped = myIndex === 0;
-                    const previousText = previousSkipped ? 'Skipped' :
-                        (previousIndex - 1 >= 0 && previousIndex - 1 < q.options.length)
-                            ? q.options[previousIndex - 1] : '(Invalid)';
-                    const myText = mySkipped ? 'Skipped' :
-                        (myIndex - 1 >= 0 && myIndex - 1 < q.options.length)
-                            ? q.options[myIndex - 1] : '(Invalid)';
-                    const previousClass = previousSkipped ? 'skipped' : 'previous';
-                    const myClass = mySkipped ? 'skipped' : 'my';
-                    html += `
-                        <div class="question-container">
-                            <div class="question-title">${index + 1}. ${q.question}</div>
-                            <div class="answer-comparison">
-                                <div class="answer-box ${previousClass}">
-                                    <div class="answer-label">Previous Answer</div>
-                                    <div class="answer-text">${previousText}</div>
-                                </div>
-                                <div class="answer-box ${myClass}">
-                                    <div class="answer-label">My Answer</div>
-                                    <div class="answer-text">${myText}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+            const backHref = questionSetParam === 'bingo'
+                ? `bingo.html?questions=${questionSetParam}`
+                : `index.html?questions=${questionSetParam}`;
 
-            html += '<a href="index.html" class="back-btn">Back to Questionnaire</a>';
-
-            contentDiv.innerHTML = html;
+            contentDiv.innerHTML = `
+                ${bodyHtml}
+                <div class="actions">
+                    <a href="${backHref}" class="back-btn">Back to questionnaire</a>
+                </div>
+            `;
         }
 
-        (function() {
-            const STORAGE_KEY = 'questionnaire-theme';
-            const btn = document.getElementById('themeToggle');
-            function applyTheme(isNight) {
-                document.body.classList.toggle('night-theme', isNight);
-                btn.textContent = isNight ? '☀' : '🌙';
-                btn.title = isNight ? 'Switch to day theme' : 'Switch to night theme';
-            }
-            btn.addEventListener('click', function() {
-                const isNight = document.body.classList.toggle('night-theme');
-                try { localStorage.setItem(STORAGE_KEY, isNight ? 'night' : 'day'); } catch (e) {}
-                applyTheme(isNight);
-            });
-            let saved = 'day';
-            try { saved = localStorage.getItem(STORAGE_KEY) || 'day'; } catch (e) {}
-            applyTheme(saved === 'night');
-        })();
-
-        // Initialize when page loads
-        window.addEventListener('DOMContentLoaded', renderComparison);
+        window.addEventListener('DOMContentLoaded', function() {
+            applyTheme(getThemePreference());
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            renderComparison();
+        });
     </script>
 </body>
 </html>
