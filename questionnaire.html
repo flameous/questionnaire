@@ -21,7 +21,12 @@
 </head>
 <body>
     <div class="page">
-        <div class="topbar">
+        <div class="topbar" id="topbar">
+            <a href="index.html" class="back-link" id="backLink" aria-label="Back to questionnaires" title="Back to questionnaires">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18L9 12L15 6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </a>
             <div class="brand">Questionnaire</div>
             <button id="themeToggle" class="theme-toggle" type="button">Light / Dark</button>
         </div>
@@ -30,8 +35,22 @@
         <div id="content"></div>
     </div>
 
+    <div id="resultModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Your answer link</h2>
+                <button class="close-btn" type="button" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="url-container">
+                <input type="text" id="resultUrl" class="url-input" readonly>
+                <button class="copy-btn" type="button" onclick="copyToClipboard()">Copy link</button>
+            </div>
+        </div>
+    </div>
+
     <script src="data/question-bank.js"></script>
+    <script src="logic.js"></script>
     <script src="assets/js/shared.js"></script>
-    <script src="assets/js/home.js"></script>
+    <script src="assets/js/questionnaire-page.js"></script>
 </body>
 </html>
